@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.res.stringResource
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.recommendation.FlowPersona
@@ -13,11 +12,7 @@ import io.github.aedev.flow.ui.components.settings.SettingsGroupScope
 import io.github.aedev.flow.ui.components.settings.SettingsListScope
 import io.github.aedev.flow.ui.components.settings.SettingsTarget
 import io.github.aedev.flow.ui.components.settings.nav
-import io.github.aedev.flow.ui.components.settings.switch
 import io.github.aedev.flow.ui.components.shared.DeepFlowState
-import io.github.aedev.flow.ui.components.shared.FlowNavRow
-import io.github.aedev.flow.ui.components.shared.FlowSwitchRow
-import io.github.aedev.flow.ui.components.shared.deepFlowStatus
 import io.github.aedev.flow.ui.screens.settings.index.DestinationIndex
 import io.github.aedev.flow.ui.screens.settings.index.HomeIndex
 
@@ -48,15 +43,6 @@ internal fun SettingsListScope.homeContent(
     state: SettingsHomeState,
     actions: SettingsHomeActions,
 ) {
-    item(HomeIndex.persona.key) {
-        PersonaEntryCard(
-            persona = state.persona,
-            selected = state.selected == SettingsDestination.TASTE,
-            onOpen = { actions.onOpen(SettingsTarget(SettingsDestination.TASTE)) },
-            modifier = state.selectedFocusModifier(SettingsDestination.TASTE),
-        )
-    }
-
     fun SettingsGroupScope.page(destination: SettingsDestination) =
         nav(
             entry = DestinationIndex.entry(destination),
@@ -67,48 +53,6 @@ internal fun SettingsListScope.homeContent(
             modifier = state.selectedFocusModifier(destination),
         )
 
-    // TV Home has no logo to long-press.
-    val deepFlowHint = R.string.deep_flow_long_press_hint.takeUnless { onTv }
-    group(key = "home.engine", header = R.string.settings_flow_engine_header, footer = deepFlowHint) {
-        row(HomeIndex.deepFlow.key) { shape ->
-            FlowSwitchRow(
-                title = stringResource(HomeIndex.deepFlow.title),
-                supportingText = deepFlowStatus(state.deepFlow) ?: stringResource(R.string.deep_flow_mode_subtitle),
-                checked = state.deepFlow.active,
-                onCheckedChange = actions.onDeepFlowChange,
-                leadingIcon = HomeRowIcons.DeepFlow,
-                shape = shape,
-            )
-        }
-        row(HomeIndex.deepFlowDuration.key) { shape ->
-            FlowNavRow(
-                title = stringResource(HomeIndex.deepFlowDuration.title),
-                supportingText = deepFlowDurationLabel(state.deepFlow.expireHours),
-                onClick = actions.onDurationClick,
-                leadingIcon = HomeRowIcons.DeepFlowDuration,
-                shape = shape,
-            )
-        }
-        switch(
-            HomeIndex.deepFlowHistory,
-            checked = state.deepFlow.saveToHistory,
-            onCheckedChange = actions.onSaveHistoryChange,
-            icon = HomeRowIcons.DeepFlowHistory,
-        )
-        switch(
-            HomeIndex.deepFlowScrobble,
-            checked = state.deepFlow.scrobble,
-            onCheckedChange = actions.onScrobbleChange,
-            icon = HomeRowIcons.DeepFlowScrobble,
-        )
-        switch(
-            HomeIndex.deepFlowOnSearch,
-            checked = state.deepFlow.showOnSearch,
-            onCheckedChange = actions.onShowOnSearchChange,
-            icon = HomeRowIcons.DeepFlowOnSearch,
-        )
-        page(SettingsDestination.TOPICS)
-    }
     group(key = "home.look", header = R.string.settings_group_look) {
         page(SettingsDestination.APPEARANCE)
         page(SettingsDestination.LANGUAGE_REGION)
@@ -145,7 +89,6 @@ internal fun SettingsListScope.homeContent(
                 icon = HomeRowIcons.Updates,
             )
         }
-        nav(HomeIndex.support, onClick = actions.onOpenDonations, icon = HomeRowIcons.Support)
     }
 }
 
