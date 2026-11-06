@@ -1,0 +1,59 @@
+name: MODIX Android APK Builder
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build APK
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon :app:assembleDebug assembleDebug
+          else
+            gradle --no-daemon :app:assembleDebug assembleDebug
+          fi
+
+      - name: Collect APK files
+        shell: bash
+        run: |
+          mkdir -p modix-apks
+          find . -type f -path '*/build/outputs/apk/*' -name '*.apk' -exec cp '{}' modix-apks/ \;
+          if [ -z "$(find modix-apks -name '*.apk' -print -quit)" ]; then
+            echo "No APK generated"
+            exit 1
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: modix-apk
+          path: modix-apks/*.apk
+          if-no-files-found: error
+          retention-days: 14
